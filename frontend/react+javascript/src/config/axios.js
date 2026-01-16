@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use environment variable for API URL, fallback to localhost for local development
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://hrms-lite-yo3x.onrender.com/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
