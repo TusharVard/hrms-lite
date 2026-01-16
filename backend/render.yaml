@@ -1,0 +1,24 @@
+# Render Blueprint Configuration
+# This file can be used to deploy via Render Blueprint
+
+services:
+  - type: web
+    name: hrms-lite-backend
+    env: node
+    buildCommand: npm install && npx prisma generate --schema=src/prisma/schema.prisma && npx prisma migrate deploy --schema=src/prisma/schema.prisma
+    startCommand: node src/app.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService:
+          type: web
+          name: hrms-lite-backend
+          property: port
+
+databases:
+  - name: hrms-lite-db
+    databaseName: hrms_lite
+    user: hrms_user

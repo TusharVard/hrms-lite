@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id          String       @id @default(uuid())
+  employeeId  String       @unique // Unique employee ID (e.g., EMP001)
+  firstName   String
+  lastName    String
+  email       String       @unique
+  phone       String?
+  department  String?
+  position    String?
+  hireDate    DateTime?
+  status      EmployeeStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  attendances Attendance[]
+  
+  @@index([employeeId])
+  @@index([email])
+  @@index([status])
+  @@map("employees")
+}
+
+model Attendance {
+  id          String       @id @default(uuid())
+  employeeId  String
+  date        DateTime     @db.Date
+  checkIn     DateTime?
+  checkOut    DateTime?
+  breakStart  DateTime?
+  breakEnd    DateTime?
+  status      AttendanceStatus @default(PRESENT)
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  // Relations
+  employee    Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  @@unique([employeeId, date]) // One attendance record per employee per day
+  @@index([employeeId])
+  @@index([date])
+  @@index([status])
+  @@map("attendances")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+  ON_LEAVE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  ON_LEAVE
+}

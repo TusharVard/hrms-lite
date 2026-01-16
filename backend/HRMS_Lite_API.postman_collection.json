@@ -1,0 +1,268 @@
+{
+	"info": {
+		"_postman_id": "hrms-lite-api-collection",
+		"name": "HRMS Lite API",
+		"description": "Complete test collection for HRMS Lite API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": ["{{base_url}}"],
+					"path": ["health"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Employees",
+			"item": [
+				{
+					"name": "Add Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set(\"employee_id\", jsonData.data.id);",
+									"    pm.environment.set(\"employee_employeeId\", jsonData.data.employeeId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"EMP001\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1234567890\",\n  \"department\": \"Engineering\",\n  \"position\": \"Software Engineer\",\n  \"hireDate\": \"2024-01-01\",\n  \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employees",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Employee (Same employeeId) - Error",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"EMP001\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"department\": \"Marketing\",\n  \"position\": \"Manager\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employees",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Employee (Same email) - Error",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"EMP002\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"department\": \"Engineering\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employees",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Employees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employees?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "employees"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Attendance",
+			"item": [
+				{
+					"name": "Mark Attendance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"{{employee_id}}\",\n  \"date\": \"2024-01-15\",\n  \"checkIn\": \"2024-01-15T09:00:00Z\",\n  \"checkOut\": \"2024-01-15T18:00:00Z\",\n  \"breakStart\": \"2024-01-15T13:00:00Z\",\n  \"breakEnd\": \"2024-01-15T14:00:00Z\",\n  \"status\": \"PRESENT\",\n  \"notes\": \"Regular working day\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Attendance (Simple Check-in)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"{{employee_id}}\",\n  \"checkIn\": \"2024-01-16T09:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Attendance Same Date - Updates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"employeeId\": \"{{employee_id}}\",\n  \"date\": \"2024-01-15\",\n  \"checkIn\": \"2024-01-15T08:30:00Z\",\n  \"checkOut\": \"2024-01-15T17:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Attendance by Employee",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/employee/{{employee_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "employee", "{{employee_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Attendance with Filters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/employee/{{employee_id}}?startDate=2024-01-01&endDate=2024-01-31&status=PRESENT&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "attendance", "employee", "{{employee_id}}"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-31"
+								},
+								{
+									"key": "status",
+									"value": "PRESENT"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "employee_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "employee_employeeId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
