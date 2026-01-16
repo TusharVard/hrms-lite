@@ -1,6 +1,18 @@
 # API Testing with cURL
 
-Base URL: `http://localhost:3000`
+## Base URLs
+
+**Local Development:**
+```
+http://localhost:3000
+```
+
+**Deployed Backend:**
+```
+https://hrms-lite-yo3x.onrender.com
+```
+
+Replace `http://localhost:3000` with `https://hrms-lite-yo3x.onrender.com` for deployed backend testing.
 
 ## 1. Health Check
 
@@ -128,7 +140,43 @@ curl -X GET "http://localhost:3000/api/attendance/employee/EMPLOYEE_ID?page=1&li
 curl -X GET "http://localhost:3000/api/attendance/employee/EMPLOYEE_ID?startDate=2024-01-01&endDate=2024-01-31&status=PRESENT&page=1&limit=10"
 ```
 
-## 8. Delete Employee
+## 8. Update Employee
+
+**Replace `EMPLOYEE_ID` with the actual `id` from step 2 response!**
+
+```bash
+curl -X PUT http://localhost:3000/api/employees/EMPLOYEE_ID \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john.smith@example.com",
+    "phone": "+1234567890",
+    "department": "Engineering",
+    "position": "Senior Software Engineer",
+    "status": "ACTIVE"
+  }'
+```
+
+**Update only specific fields:**
+```bash
+# Update only email
+curl -X PUT http://localhost:3000/api/employees/EMPLOYEE_ID \
+  -H "Content-Type: application/json" \
+  -d '{"email": "newemail@example.com"}'
+
+# Update only department
+curl -X PUT http://localhost:3000/api/employees/EMPLOYEE_ID \
+  -H "Content-Type: application/json" \
+  -d '{"department": "Marketing"}'
+
+# Update status
+curl -X PUT http://localhost:3000/api/employees/EMPLOYEE_ID \
+  -H "Content-Type: application/json" \
+  -d '{"status": "INACTIVE"}'
+```
+
+## 9. Delete Employee
 
 **Replace `EMPLOYEE_ID` with the actual `id` from step 2 response!**
 

@@ -30,6 +30,19 @@ function EmployeeForm({ employee, mode = 'add', onSave, onCancel }) {
         hireDate: employee.hireDate ? employee.hireDate.split('T')[0] : '',
         status: employee.status || 'ACTIVE',
       });
+    } else if (mode === 'add') {
+      // Reset form for add mode
+      setFormData({
+        employeeId: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        department: '',
+        position: '',
+        hireDate: '',
+        status: 'ACTIVE',
+      });
     }
   }, [employee, mode]);
 
@@ -49,16 +62,25 @@ function EmployeeForm({ employee, mode = 'add', onSave, onCancel }) {
 
     try {
       const payload = {
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
         phone: formData.phone || null,
         department: formData.department || null,
         position: formData.position || null,
         hireDate: formData.hireDate || null,
+        status: formData.status,
       };
 
-      // Note: Backend only supports POST (add) for now
-      // Edit functionality would require an update endpoint
-      const response = await apiClient.post('/employees', payload);
+      let response;
+      if (mode === 'edit' && employee?.id) {
+        // Update existing employee
+        response = await apiClient.put(`/employees/${employee.id}`, payload);
+      } else {
+        // Create new employee
+        payload.employeeId = formData.employeeId;
+        response = await apiClient.post('/employees', payload);
+      }
 
       if (response.data.success) {
         onSave();

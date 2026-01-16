@@ -59,13 +59,10 @@ function Employees() {
   };
 
   // Handle edit employee
-  // Note: Edit functionality requires backend update endpoint
   const handleEdit = (employee) => {
-    alert('Edit functionality requires an update endpoint. For now, please delete and recreate the employee.');
-    // Uncomment when update endpoint is available:
-    // setEditingEmployee(employee);
-    // setFormMode('edit');
-    // setShowForm(true);
+    setEditingEmployee(employee);
+    setFormMode('edit');
+    setShowForm(true);
   };
 
   // Handle delete employee

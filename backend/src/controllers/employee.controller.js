@@ -240,6 +240,149 @@ const listEmployees = async (req, res) => {
 };
 
 /**
+ * Update an employee by ID
+ * PUT /api/employees/:id
+ */
+const updateEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      department,
+      position,
+      hireDate,
+      status
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Employee ID is required'
+      });
+    }
+
+    // Check if employee exists
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { id }
+    });
+
+    if (!existingEmployee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found'
+      });
+    }
+
+    // Validation - at least one field should be provided
+    if (!firstName && !lastName && !email && !phone && !department && !position && !hireDate && !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one field must be provided for update'
+      });
+    }
+
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      // Check if email already exists (excluding current employee)
+      const emailExists = await prisma.employee.findFirst({
+        where: {
+          email: email.toLowerCase().trim(),
+          id: { not: id }
+        }
+      });
+
+      if (emailExists) {
+        return res.status(409).json({
+          success: false,
+          message: `Employee with email ${email} already exists`
+        });
+      }
+    }
+
+    // Validate status if provided
+    if (status) {
+      const validStatuses = ['ACTIVE', 'INACTIVE', 'TERMINATED', 'ON_LEAVE'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+        });
+      }
+    }
+
+    // Validate hireDate format if provided
+    if (hireDate) {
+      const date = new Date(hireDate);
+      if (isNaN(date.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid hireDate format. Use ISO 8601 format (YYYY-MM-DD)'
+        });
+      }
+    }
+
+    // Build update data (only include provided fields)
+    const updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName.trim();
+    if (lastName !== undefined) updateData.lastName = lastName.trim();
+    if (email !== undefined) updateData.email = email.toLowerCase().trim();
+    if (phone !== undefined) updateData.phone = phone?.trim() || null;
+    if (department !== undefined) updateData.department = department?.trim() || null;
+    if (position !== undefined) updateData.position = position?.trim() || null;
+    if (hireDate !== undefined) updateData.hireDate = hireDate ? new Date(hireDate) : null;
+    if (status !== undefined) updateData.status = status;
+
+    // Update employee
+    const updatedEmployee = await prisma.employee.update({
+      where: { id },
+      data: updateData
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Employee updated successfully',
+      data: updatedEmployee
+    });
+  } catch (error) {
+    console.error('Error updating employee:', error);
+
+    // Handle Prisma record not found error
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found'
+      });
+    }
+
+    // Handle Prisma unique constraint errors
+    if (error.code === 'P2002') {
+      const field = error.meta?.target?.[0] || 'field';
+      return res.status(409).json({
+        success: false,
+        message: `${field} already exists`
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update employee',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+/**
  * Delete an employee by ID
  * DELETE /api/employees/:id
  */
@@ -302,5 +445,6 @@ const deleteEmployee = async (req, res) => {
 module.exports = {
   addEmployee,
   listEmployees,
+  updateEmployee,
   deleteEmployee
 };
